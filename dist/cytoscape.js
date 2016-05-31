@@ -10531,7 +10531,7 @@ CoseLayout.prototype.run = function() {
   });
 
   var done = function(){
-    refresh({ 
+    refresh({
       force: true,
       next: function(){
         // Layout has finished
@@ -12735,6 +12735,7 @@ BRp.findEdgeControlPoints = function(edges) {
       var ctrlptDists = eStyle['control-point-distances'];
       var ctrlptWs = eStyle['control-point-weights'];
       var bezierN = ctrlptDists && ctrlptWs ? Math.min( ctrlptDists.value.length, ctrlptWs.value.length ) : 1;
+      var loopDir = eStyle['loop-direction'] ? eStyle['loop-direction'].value : 'northwest';
       var stepSize = eStyle['control-point-step-size'].pfValue;
       var ctrlptDist = ctrlptDists !== undefined ? ctrlptDists.pfValue[0] : undefined;
       var ctrlptWeight = ctrlptWs.value[0];
@@ -12807,13 +12808,63 @@ BRp.findEdgeControlPoints = function(edges) {
           loopDist = ctrlptDist;
         }
 
-        rs.ctrlpts = [
-          srcPos.x,
-          srcPos.y - (1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
-
-          srcPos.x - (1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1),
-          srcPos.y
-        ];
+        if (loopDir === 'north') {
+          rs.ctrlpts = [
+            srcPos.x + (0.4)*(1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y - (0.67)*(1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.x - (0.4)*(1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y - (0.67)*(1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1)
+          ];
+        } else if (loopDir === 'south'){
+          rs.ctrlpts = [
+            srcPos.x + (0.4)*(1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y + (0.67)*(1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.x - (0.4)*(1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y + (0.67)*(1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1)
+          ];
+        } else if (loopDir === 'east'){
+          rs.ctrlpts = [
+            srcPos.x + (0.67)*(1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y + (0.4)*(1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.x + (0.67)*(1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y - (0.4)*(1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1)
+          ];
+        } else if (loopDir === 'west'){
+          rs.ctrlpts = [
+            srcPos.x - (0.67)*(1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y + (0.4)*(1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.x - (0.67)*(1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y - (0.4)*(1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1)
+          ];
+        } else if (loopDir === 'northeast'){
+          rs.ctrlpts = [
+            srcPos.x,
+            srcPos.y - (1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.x + (1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y
+          ];
+        } else if (loopDir === 'southeast'){
+          rs.ctrlpts = [
+            srcPos.x,
+            srcPos.y + (1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.x + (1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y
+          ];
+        } else if (loopDir === 'southwest'){
+          rs.ctrlpts = [
+            srcPos.x,
+            srcPos.y + (1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.x - (1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y
+          ];
+        } else {  //northwest is default
+           rs.ctrlpts = [
+            srcPos.x,
+            srcPos.y - (1 + Math.pow(srcH, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.x - (1 + Math.pow(srcW, 1.12) / 100) * loopDist * (j / 3 + 1),
+            srcPos.y
+          ];
+        }
 
       } else if(
         hasCompounds &&
@@ -22766,6 +22817,7 @@ var styfn = {};
     lineStyle: { enums: ['solid', 'dotted', 'dashed'] },
     borderStyle: { enums: ['solid', 'dotted', 'dashed', 'double'] },
     curveStyle: { enums: ['bezier', 'unbundled-bezier', 'haystack', 'segments'] },
+    loopDirection: { enums: ['north', 'south', 'east', 'west', 'northwest', 'southwest', 'northeast', 'southeast'] },
     fontFamily: { regex: '^([\\w- \\"]+(?:\\s*,\\s*[\\w- \\"]+)*)$' },
     fontVariant: { enums: ['small-caps', 'normal'] },
     fontStyle: { enums: ['italic', 'normal', 'oblique'] },
@@ -22926,7 +22978,7 @@ var styfn = {};
     { name: 'control-point-weights', type: t.numbers },
     { name: 'segment-distances', type: t.bidirectionalSizes },
     { name: 'segment-weights', type: t.numbers },
-
+    { name: 'loop-direction', type: t.loopDirection },
     // these are just for the core
     { name: 'selection-box-color', type: t.color },
     { name: 'selection-box-opacity', type: t.zeroOneNumber },
